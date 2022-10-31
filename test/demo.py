@@ -1,31 +1,4 @@
-
-# memcom
-
-Interprocess real time message/audio/video buffers
-
----------------------------------------------------------------------
-## Table of contents
-
-* [Install](#install)
-* [Examples](#examples)
-* [References](#references)
-
-&nbsp;
-
----------------------------------------------------------------------
-## Install
-
-    $ pip3 install memcom
-
-&nbsp;
-
-
----------------------------------------------------------------------
-## Examples
-
-### Example that creates a test clip
-
-``` Python
+#!/usr/bin/env python3
 
 import os
 import time
@@ -182,18 +155,3 @@ if __name__ == '__main__':
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(run())
-
-```
-
-&nbsp;
-
-
----------------------------------------------------------------------
-## References
-
-- Python
-    - https://www.python.org/
-
-- pip
-    - https://pip.pypa.io/en/stable/
-

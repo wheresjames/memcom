@@ -1,0 +1,10 @@
+name            memcom
+version         0.1.1
+description     Interprocess real time message/audio/video buffers
+company         wheresjames
+author          Robert Umbehant
+email           memcom@wheresjames.com
+url             https://github.com/wheresjames/memcom
+repo            git+ssh://git@github.com/wheresjames/memcom.git
+bugs            https://github.com/wheresjames/memcom/issues
+license         MIT

@@ -1,39 +1,21 @@
-
-# memcom
-
-Interprocess real time message/audio/video buffers
-
----------------------------------------------------------------------
-## Table of contents
-
-* [Install](#install)
-* [Examples](#examples)
-* [References](#references)
-
-&nbsp;
-
----------------------------------------------------------------------
-## Install
-
-    $ pip3 install memcom
-
-&nbsp;
-
-
----------------------------------------------------------------------
-## Examples
-
-### Example that creates a test clip
-
-``` Python
+#!/usr/bin/env python3
 
 import os
 import time
 import asyncio
 import memcom
 
+try:
+    import sparen
+    Log = sparen.log
+except:
+    Log = print
+Fmt = lambda o: json.dumps(o, indent=2)
+
+
 def on_error(ctx, e):
-    print(ctx.getName(), '---', e)
+    Log(ctx.getName(), '---', e)
+
 
 async def run():
 
@@ -47,10 +29,8 @@ async def run():
     # Clip length in seconds
     t = 30
 
-    # Time divider / Clip will be t / div seconds in length
-    # Using a higher divider gives more time to process
-    # If your CPU can´t keep up, increase this value
-    div = 1
+    # Time divider
+    div = 4
 
     #---------------------------------------------------------------
     # Video parameters
@@ -58,13 +38,13 @@ async def run():
     h = 600
     vfps = 15
 
-    print('Create video share')
+    Log('Create video share')
     vid = memcom.mcVideo()
     if not vid.create(bufs=2*vfps, width=w, height=h, fps=vfps, cleanup=True):
         raise Exception(vid.getError())
 
     vsname = vid.getName()
-    print(f'Video share created: {vsname}')
+    Log(f'Video share created: {vsname}')
 
 
     #---------------------------------------------------------------
@@ -74,13 +54,13 @@ async def run():
     asr = 48000
     afps = 50
 
-    print('Create audio share')
+    Log('Create audio share')
     aud = memcom.mcAudio()
     if not aud.create(bufs=2*afps, ch=ch, bps=bps, bitrate=asr, fps=afps, cleanup=True):
         raise Exception(aud.getError())
 
     asname = aud.getName()
-    print(f'Audio share created: {asname}')
+    Log(f'Audio share created: {asname}')
 
 
     #---------------------------------------------------------------
@@ -90,7 +70,7 @@ async def run():
     n = 0
 
     # Target number of rects / adds one each second
-    m = 4
+    m = 16
 
     tv = []
     rects = [{'x': 0, 'y': 0, 'w': w, 'h': h}]
@@ -111,7 +91,7 @@ async def run():
 
     #---------------------------------------------------------------
     # Create file recorder
-    print('Create recorder')
+    Log('Create recorder')
     rec = memcom.mcRecord(on_error=on_error,
                           opts={'name': 'Recorder',
                                 'video':vsname, 'vbias':-0.5, 'vwin':0.25,
@@ -123,7 +103,7 @@ async def run():
 
     #---------------------------------------------------------------
     # Create frame eraser / clears frames before reuse
-    print('Create Eraser')
+    Log('Create Eraser')
     erase = memcom.mcBlank(on_error=on_error,
                            opts={'name': 'Eraser',
                                  'video':vsname, 'vbias':-0.75, 'vwin':0.25,
@@ -134,7 +114,7 @@ async def run():
 
     #---------------------------------------------------------------
     # Create the clock
-    print('Create clock')
+    Log('Create clock')
     clk = memcom.mcClock(on_error=on_error,
                          opts={'name': 'Clock', 'div':div,
                                'video':vsname, 'vfps':vfps, 'vbias':0, 'vwin':0.25,
@@ -145,28 +125,24 @@ async def run():
     #---------------------------------------------------------------
     # Run everything for t * div seconds
     d = 0
-    c = 0
     t = t * div
     while 0 < t:
-        time.sleep(1)
         t -= 1
         d += 1
         if d >= div:
             d = 0
-            c += 1
-            if c >= 4:
-                c = 0
-                if len(rects) < m:
-                    print('Add rect')
-                    r = memcom.addRect(rects)
-                    ri = len(rects) + 1
-                    v = memcom.mcTestVid(on_error=on_error,
-                                            opts={'name': f'Rect{ri}', 'roi':r,
-                                                'video':vsname, 'vbias':-0.25, 'vwin':0.25,
-                                                'audio':asname, 'abias':-0.25, 'awin':0.25})
-                    if not v.create():
-                        raise Exception(v.getError())
-                    tv.append(v)
+            if len(rects) < m:
+                Log('Add rect')
+                r = memcom.addRect(rects)
+                ri = len(rects) + 1
+                v = memcom.mcTestVid(on_error=on_error,
+                                     opts={'name': f'Rect{ri}', 'roi':r,
+                                           'video':vsname, 'vbias':-0.25, 'vwin':0.25,
+                                           'audio':asname, 'abias':-0.25, 'awin':0.25})
+                if not v.create():
+                    raise Exception(v.getError())
+                tv.append(v)
+        time.sleep(1)
 
 
     # Close everything
@@ -178,22 +154,19 @@ async def run():
     vid.close()
 
 
-if __name__ == '__main__':
+def main():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(run())
 
-```
 
-&nbsp;
-
-
----------------------------------------------------------------------
-## References
-
-- Python
-    - https://www.python.org/
-
-- pip
-    - https://pip.pypa.io/en/stable/
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        Log(" ~ keyboard ~ ")
+    except Exception as e:
+        Log(" ~ exception ~ ", e)
+    finally:
+        Log('\r\n--- Done ---')
 

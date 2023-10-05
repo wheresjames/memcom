@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Publish
-#   ./sh/clean.sh && ./setup.py bdist_wheel
+#   ./sh/clean.sh && python3 ./setup.py bdist_wheel
 #   python3 -m twine upload dist/*
 
 import os

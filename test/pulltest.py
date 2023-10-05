@@ -27,10 +27,12 @@ async def run():
     fname = './out/testvid.avi'
 
     # Clip length in seconds
-    t = 30
+    # t = 30
+    t = 60
 
     # Time divider
-    div = 4
+    div = 1
+    # div = 4
 
     #---------------------------------------------------------------
     # Video parameters
